@@ -35,7 +35,7 @@ const GastosController = {
         } catch (error) {
             res.status(500).json({
                 allOK: false, 
-                mensaje: "Ocurrio un error al los gastos", 
+                mensaje: "Ocurrio un error al leer los gastos", 
                 data: error.message,
             });
         }

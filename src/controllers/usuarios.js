@@ -78,16 +78,16 @@ const UsuariosController = {
     },
     leerTodos: async (req, res) =>{
         try {
-            const gastos = await GastoModel.find();
+            const registros = await UsuarioModel.find();
             res.status(200).json({
                 allOK: true, 
-                mensaje: "Todos los gastos leidos correctamente", 
-                data: gastos,
+                mensaje: "Todos los usuarios registrados leidos correctamente", 
+                data: registros,
             });
         } catch (error) {
             res.status(500).json({
                 allOK: false, 
-                mensaje: "Ocurrio un error al leer los gastos", 
+                mensaje: "Ocurrio un error al leer los usuarios registrados", 
                 data: error.message,
             });
         }
@@ -95,23 +95,23 @@ const UsuariosController = {
     leerUno: async (req, res) =>{
         try {
             const {id} = req.params;
-            const gasto = await GastoModel.findById(id);
-            if (!gasto) {
+            const usuarioRegistrado = await UsuarioModel.findById(id);
+            if (!usuarioRegistrado) {
                 res.status(404).json({
                     allOK: false, 
-                    mensaje: `El gasto con ID ${id} no se encontró`, 
+                    mensaje: `El usuario con ID ${id} no se encontró`, 
                     data: null,
                 });
             }
             res.status(200).json({
                 allOK: true, 
-                mensaje: `El gasto con ID ${id} se leyo correctamente`, 
-                data: gasto
+                mensaje: `El usuario con ID ${id} se leyo correctamente`, 
+                data: usuarioRegistrado
             });
         } catch (error) {
             res.status(500).json({
                 allOK: false, 
-                mensaje: "Ocurrio un error al leer el gasto", 
+                mensaje: "Ocurrio un error al leer el el usuario registrado", 
                 data: error.message
             });
         }
@@ -119,53 +119,83 @@ const UsuariosController = {
     editar: async (req, res) =>{
         try {
             const {id} = req.params;
-            const {nombreGasto, fechaGasto, montoGasto, gastoPagado} = req.body;
-            const gastoActualizado = await GastoModel.findByIdAndUpdate(id, {
-                nombreGasto, 
-                fechaGasto, 
-                montoGasto, 
-                gastoPagado,
+            const {nombreUsuario, emailUsuario, contraseñaUsuario} = req.body;
+            const contraseñaEncriptada = await bcrypt.hash(contraseñaUsuario, 10);
+            const usuarioActualizado = await UsuarioModel.findByIdAndUpdate(id, {
+                nombreUsuario, 
+                emailUsuario, 
+                contraseñaUsuario: contraseñaEncriptada
             });
-            if (!gastoActualizado) {
+            if (!usuarioActualizado) {
                 res.status(404).json({
                     allOK: false, 
-                    mensaje: `El gasto con ID ${id} no se encontró`, 
+                    mensaje: `El usuario con ID ${id} no se encontró`, 
                     data: null,
                 });
             }
             res.status(200).json({
                 allOK: true, 
-                mensaje: `El gasto con ID ${id} se actualizó correctamente`, 
-                data: gastoActualizado,
+                mensaje: `El usuario con ID ${id} se actualizó correctamente`, 
+                data: usuarioActualizado,
             });
         } catch (error) {
             res.status(500).json({
                 allOK: false, 
-                mensaje: "Ocurrio un error al actualizar el gasto", 
+                mensaje: "Ocurrio un error al actualizar el usuario", 
                 data: error.message
+            });
+        }
+    },
+    recuperarContraseña: async (req, res) => {
+        try {
+            const { emailUsuario, nuevaContrasena } = req.body;
+
+            const usuario = await UsuarioModel.findOne({ emailUsuario });
+            if (!usuario) {
+                return res.status(404).json({
+                    allOK: false,
+                    mensaje: "No se encontró ningún usuario con ese correo",
+                    data: null,
+                });
+            }
+
+            const contraseñaEncriptada = await bcrypt.hash(nuevaContrasena, 10);
+            usuario.contraseñaUsuario = contraseñaEncriptada;
+            await usuario.save();
+
+            res.status(200).json({
+                allOK: true,
+                mensaje: "Contraseña actualizada correctamente",
+                data: null,
+            });
+        } catch (error) {
+            res.status(500).json({
+                allOK: false,
+                mensaje: "Error al actualizar la contraseña",
+                data: error.message,
             });
         }
     },
     eliminar: async (req, res) =>{
         try {
             const {id} = req.params;
-            const gastoEliminado = await GastoModel.findByIdAndDelete(id);
-            if (!gastoEliminado) {
+            const usuarioEliminado = await UsuarioModel.findByIdAndDelete(id);
+            if (!usuarioEliminado) {
                 res.status(404).json({
                     allOK: false, 
-                    mensaje: `El gasto con ID ${id} no se encontró`, 
+                    mensaje: `El usuario con ID ${id} no se encontró`, 
                     data: null,
                 });
             }
             res.status(200).json({
                 allOK: true, 
-                mensaje: `El gasto con ID ${id} se eliminó correctamente`, 
-                data: gastoEliminado,
+                mensaje: `El usuario con ID ${id} se eliminó correctamente`, 
+                data: usuarioEliminado,
             });
         } catch (error) {
             res.status(500).json({
                 allOK: false, 
-                mensaje: "Ocurrio un error al eliminar el gasto", 
+                mensaje: "Ocurrio un error al eliminar el usuario", 
                 data: error.message
             });
         }
